@@ -62,7 +62,7 @@ async function getProductsSafe() {
 
 	let errorObj = null; // 不然在 try 裡面定義變數的話，因為作用域的關係，catch 抓不到 
 	try{
-		const response = await fetch(`${BASE_URL}/api/livejs/v1/customer/${API_PATH}/carts`);
+		const response = await fetch(`${BASE_URL}/api/livejs/v1/customer/${API_PATH}/products`);
     
 		if(!response.ok){
 			errorObj = {
@@ -73,13 +73,36 @@ async function getProductsSafe() {
 		};
 
 		const data = await response.json();
-    console.log(data);
-    console.log({ success: data.status, data: data.carts });   
-		return { success: data.status, data: data.carts };   
+		// console.log(data); 測試用
+		// console.log({ success: data.status, data: data.products }); 驗證用  
+		return { success: data.status, data: data.products };   
 	} catch(error) {
 	  console.log( errorObj || {success: false, error: error.message} );
+	  return( errorObj || {success: false, error: error.message} )
   };
 };
+
+// 寫法二：
+async function getProductsSafe() {
+  try {
+    const response = await fetch(`${BASE_URL}/api/livejs/v1/customer/${API_PATH}/products`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { success: false, error: errorData.message || '取得產品失敗' }; 
+	  // 直接 return 整個物件，並中止函式運算。
+	  // 透過 || 短路邏輯，只要左邊有字串，就是 truthy 值跑左邊；
+	  // 左邊為 "" 空字串、undefined 為 falsy 值，就會跑右邊
+    }
+
+    const data = await response.json();
+    return { success: true, data: data.products };
+
+  } catch (error) {
+
+    return { success: false, error: error.message }; // 直接回傳 {} 整個物件
+  }
+}
 
 // ========================================
 // 任務二：POST 請求 - 購物車操作
